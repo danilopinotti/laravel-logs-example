@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class CepService
 {
@@ -10,7 +11,8 @@ class CepService
     {
         $cep = preg_replace('/[^0-9]/', '', $cep);
         if (strlen($cep) !== 8) {
-            return ['erro' => 'CEP inválido'];
+            Log::error('CEP invalido', ['cep' => $cep]);
+            return ['erro' => 'CEP invalido'];
         }
 
         return Http::get("https://viacep.com.br/ws/{$cep}/json/")
