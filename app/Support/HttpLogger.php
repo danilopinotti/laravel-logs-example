@@ -16,7 +16,7 @@ class HttpLogger
 
     public function logOutbound(ClientRequest $request, ClientResponse $response = null): void
     {
-        if (!config('http-logger.enable')) {
+        if (!config('http-logger.enable', true)) {
             return;
         }
 
