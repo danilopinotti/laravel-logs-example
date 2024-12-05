@@ -5,21 +5,25 @@ namespace App\Http\Middleware;
 use App\Support\ExecutionId;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Symfony\Component\HttpFoundation\Response;
 
 class AssignRequestId
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!defined('LARAVEL_START')) {
-            define('LARAVEL_START', microtime(true));
-        }
+        $executionId = (new ExecutionId())->get();
+
+        Context::add([
+            'trace_id' => $executionId,
+            'start_time' => microtime(true),
+        ]);
 
         $response = $next($request);
 
         if (method_exists($response, 'header')) {
             $response->headers
-                ->set('Request-Id', app(ExecutionId::class)->get());
+                ->set('Trace-Id', $executionId);
         }
 
         return $response;

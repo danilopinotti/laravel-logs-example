@@ -5,6 +5,7 @@ namespace App\Support;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Client\Response as ClientResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Context;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -68,11 +69,13 @@ class HttpLogger
         $method = $request->method();
         $path = Str::start($request->path(), '/');
 
+        $startTime = Context::get('start_time');
+
         $context = [
             'statusCode' => $statusCode = $response->getStatusCode(),
             'body' => $this->sanitizeBody($response->getContent()),
             'headers' => $this->sanitizeHeaders($response->headers->all()),
-            'elapsedTimeMs' => round((microtime(true) - LARAVEL_START) * 1000),
+            'elapsedTimeMs' => round((microtime(true) - $startTime) * 1000),
         ];
 
         $this->log("RES IN: $statusCode $method $path", $context);

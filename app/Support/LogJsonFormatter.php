@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Context;
 use Monolog\Formatter\JsonFormatter;
 use Monolog\LogRecord;
 
@@ -16,13 +17,7 @@ class LogJsonFormatter extends JsonFormatter
     {
         $normalized = $this->normalize($record);
 
-        if (isset($normalized['context']) && $normalized['context'] === []) {
-            if ($this->ignoreEmptyContextAndExtra) {
-                unset($normalized['context']);
-            } else {
-                $normalized['context'] = new \stdClass;
-            }
-        }
+        $context = Context::only(['trace_id', 'start_time']);
 
         $data = [
             'level' => strtolower($normalized['level_name']),
@@ -30,9 +25,9 @@ class LogJsonFormatter extends JsonFormatter
             'origin' => $this->getOrigin(),
             'data' => Arr::except(
                 data_get($normalized, 'context'),
-                ['traceId', 'contextName', 'timestamp']
+                ['contextName', 'timestamp']
             ),
-            'traceId' =>  data_get($normalized, 'context.traceId'),
+            'traceId' =>  data_get($context, 'trace_id'),
             'timestamp' => data_get($normalized, 'context.timestamp')
                 ?? Carbon::make($normalized['datetime']),
         ];
@@ -44,7 +39,8 @@ class LogJsonFormatter extends JsonFormatter
     {
         $backtrace = debug_backtrace();
         $caller = Arr::first($backtrace, static function (array $trace) {
-            return $trace['file'] !== __FILE__
+            return isset($trace['file'])
+                && $trace['file'] !== __FILE__
                 && !str_contains($trace['file'], 'vendor');
         });
         $caller = $caller ?? $backtrace[0];
