@@ -31,8 +31,11 @@ return [
         //
     ],
 
-    'except_paths' => [
+    'except_paths' => array_filter([
         '/telescope*',
         '/horizon*',
-    ],
+        '/metrics',
+        '/health',
+        ...explode(',', env('HTTP_LOGGER_EXCEPT_PATHS', '')),
+    ]),
 ];

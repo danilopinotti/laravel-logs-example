@@ -9,6 +9,8 @@ class CepService
 {
     public function getCep(string $cep): array
     {
+        Log::debug('Consulta de CEP', ['cep' => $cep]);
+
         $cep = preg_replace('/[^0-9]/', '', $cep);
         if (strlen($cep) !== 8) {
             Log::error('CEP invalido', ['cep' => $cep]);
